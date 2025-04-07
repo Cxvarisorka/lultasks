@@ -21,34 +21,41 @@ const InfoProvider = ({ children }) => {
     };
 
     const addColumn = (boardId, name, color) => {
-        if (!name.trim() || !boards.some(board => board.id === boardId)) return;
+        // Check if column limit (max 5) is reached
+        if (!name.trim() || !boards.some(board => board.id === boardId) || columns.filter(column => column.boardId === boardId).length >= 5) return;
+    
         const newColumn = { id: uuidv4(), boardId, name, color };
         setColumns([...columns, newColumn]);
     };
-
+    
     const addTask = (columnId, title, description, status, initialSubtasks) => {
-        if (!title.trim() || !columns.some(column => column.id === columnId)) return null;
-  
+        // Check if task limit (max 5 per column) is reached
+        if (!title.trim() || !columns.some(column => column.id === columnId) || tasks.filter(task => task.columnId === columnId).length >= 8) return null;
+    
         const taskId = uuidv4();
         const newTask = { id: taskId, columnId, title, description, status };
         
         setTasks(prev => [...prev, newTask]);
         
-        const newSubtasks = initialSubtasks.map(subtaskTitle => ({
+        // Add subtasks if any are provided and ensure subtask limit (max 3)
+        const newSubtasks = initialSubtasks.slice(0, 3).map(subtaskTitle => ({
             id: uuidv4(),
             taskId,
             title: subtaskTitle,
             completed: false
         }));
-        
+    
         setSubtasks(prev => [...prev, ...newSubtasks]);
     };
-
+    
     const addSubtask = (taskId, title, completed = false) => {
-        if (!title.trim() || !tasks.some(task => task.id === taskId)) return;
+        // Check if subtask limit (max 3 per task) is reached
+        if (!title.trim() || !tasks.some(task => task.id === taskId) || subtasks.filter(subtask => subtask.taskId === taskId).length >= 3) return;
+        
         const newSubtask = { id: uuidv4(), taskId, title, completed };
         setSubtasks([...subtasks, newSubtask]);
     };
+    
 
     const deleteBoard = (boardId) => {
         setBoards(boards.filter(board => board.id !== boardId));
